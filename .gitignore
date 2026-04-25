@@ -1,0 +1,24 @@
+# Ficheros temporales generados en ejecución
+/tmp/tello_state_*.txt
+
+# Logs
+*.log
+
+# Ficheros de editor
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Entornos virtuales Python (por si se añaden scripts auxiliares)
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE / editores
+.vscode/
+.idea/
+*.code-workspace
