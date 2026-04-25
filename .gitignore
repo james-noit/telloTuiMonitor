@@ -1,6 +1,8 @@
 # Ficheros temporales generados en ejecución
 /tmp/tello_state_*.txt
 
+*.pdf
+
 # Logs
 *.log
 
