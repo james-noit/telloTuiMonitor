@@ -1,6 +1,7 @@
 # Ficheros temporales generados en ejecución
 /tmp/tello_state_*.txt
 
+# PDF
 *.pdf
 
 # Logs
@@ -24,3 +25,4 @@ __pycache__/
 .vscode/
 .idea/
 *.code-workspace
+.continue
