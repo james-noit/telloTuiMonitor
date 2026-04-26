@@ -4,6 +4,8 @@ Language: [Español](README.es.md) | [English](README.md)
 
 Control and monitor your DJI Tello or Tello EDU from a terminal interface.
 
+![Main Panel](Resources/img/mainPanel+VideoStream.png)
+
 ## Quickstart
 
 1. Connect your computer to the drone Wi-Fi network: TELLO-XXXXXX.
