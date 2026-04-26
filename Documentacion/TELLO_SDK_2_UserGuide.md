@@ -80,12 +80,8 @@ back x | Fly backward for “x” cm. “x” = 20-500
 cw x | Rotate “x” degrees clockwise. “x” = 1-360
 ccw x | Rotate “x” degrees counterclockwise. “x” = 1-360
 flip x | Flip in “x” direction. “l” = left “r” = right “f” = forward “b” = back
-go x y z speed | Fly to “x” “y” “z” at “speed” (cm/s). “x” = -500-500 “y” = -500-500 “z” = -500-500 “speed” = 10-100
-
-Note: “x”, “y”, and “z” values can’t be set between -20 – 20 simultaneously.
-
+go x y z speed | Fly to “x” “y” “z” at “speed” (cm/s). “x” = -500-500 “y” = -500-500 “z” = -500-500 “speed” = 10-100 Note: “x”, “y”, and “z” values can’t be set between -20 – 20 simultaneously.
 stop | Hovers in the air. Note: works at any time.
-
 curve x1 y1 z1 x2 y2 z2 speed | Fly at a curve according to the two given coordinates at “speed” (cm/s). If the arc radius is not within a range of 0.5-10 meters, it will respond with an error.
 
 “x1”, “x2” = -500-500

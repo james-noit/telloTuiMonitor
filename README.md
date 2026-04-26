@@ -4,9 +4,9 @@ Monitor TUI + control de vuelo para el dron **DJI Tello / Tello EDU** desde la l
 
 ## Descripción
 
-`tello_monitor.sh` se conecta al dron vía WiFi y muestra un panel TUI interactivo con los principales parámetros de telemetría (batería, altitud, actitud, velocidades, temperatura y tiempo de motor) y un panel de control que permite despegar y aterrizar el dron con el teclado.
+`tello_monitor.sh` se conecta al dron vía WiFi y muestra un panel TUI interactivo con los principales parámetros de telemetría (batería, altitud, actitud, velocidades, temperatura y tiempo de motor) y un panel de control con **selector de comandos SDK 2.0**. Incluye comandos sin argumentos (`command`, `takeoff`, `land`, `streamon`, `streamoff`, `emergency`) y comandos con parámetro `x` (`up/down/left/right/forward/back/cw/ccw`) con validación de rango según el SDK.
 
-```
+```text
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      TELLO MONITOR  ·  SDK 2.0  ·  12:34:56
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -21,12 +21,22 @@ Monitor TUI + control de vuelo para el dron **DJI Tello / Tello EDU** desde la l
   Temp      :  61 C - 63 C   Motor: 0 s
 
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    CONTROL  ← → navegar  ·  Enter ejecutar  ·  q salir
+    CONTROL  ← → mover  ·  ↑ ↓ cambiar bloque  ·  Enter ejecutar  ·  q salir
 
-      [ ↑ DESPEGAR ]       ATERRIZAR ↓
+    Comandos base
+    CONNECT      TAKEOFF      LAND         STREAM ON     STREAM OFF    [ EMERGENCY ]
 
-  Ultimo   :  takeoff
-  Respuesta:  ok
+    Movimiento y rotacion
+    UP x         DOWN x       LEFT x       RIGHT x       FWD x         BACK x       CW x         CCW x
+
+    Seleccion: [6/14] EMERGENCY
+    Comando: emergency
+    Parametro: sin argumentos
+
+  ┌─ Respuesta del dron ──────────────────────────┐
+  │  Comando  :  takeoff                          │
+  │  Resultado:  ok                               │
+  └───────────────────────────────────────────────┘
 
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Estado: actualizacion automatica cada 5s
@@ -40,7 +50,7 @@ Monitor TUI + control de vuelo para el dron **DJI Tello / Tello EDU** desde la l
 | Tello → PC (respuesta) | UDP       | 0.0.0.0 (bind)  | 9000   |
 | Tello → PC (estado)    | UDP       | 0.0.0.0 (bind)  | 8890   |
 
-> El puerto local **9000** se usa para enviar comandos que esperan respuesta (`takeoff`, `land`) y recibir el `ok`/`error` del Tello, siguiendo la misma convención que el SDK oficial.
+Nota: el script usa el puerto local **9000** para comandos que esperan respuesta (por ejemplo `command`, `takeoff`, `streamon`, `up 50`, `cw 90`, etc.). El listener de estado escucha en el puerto `8890` y guarda el último paquete junto con un timestamp para detectar pérdida de señal.
 
 ## Requisitos
 
@@ -75,55 +85,78 @@ chmod +x tello_monitor.sh
 
 ### Controles de teclado
 
-| Tecla       | Acción                                  |
-|-------------|-----------------------------------------|
-| `←` / `→`   | Navegar entre botones (DESPEGAR/ATERRIZAR) |
-| `Enter`     | Ejecutar el comando seleccionado        |
-| `q` / `Q`   | Salir limpiamente                       |
-| `Ctrl+C`    | Salir (alternativa)                     |
+- `←` / `→`: mover selección dentro del bloque.
+- `↑` / `↓`: cambiar entre bloque base y bloque de movimiento.
+- `Enter`: ejecutar el comando seleccionado.
+- `c` / `C`: cancelar el prompt de argumento `x`.
+- `q` / `Q`: salir limpiamente.
+- `Ctrl+C`: salir (alternativa).
 
 Pulsa **Ctrl+C** o **q** para salir limpiamente.
 
+## Comandos de control implementados
+
+| Comando SDK | Requiere argumento | Rango válido |
+|-------------|--------------------|--------------|
+| `command`   | No                 | -            |
+| `takeoff`   | No                 | -            |
+| `land`      | No                 | -            |
+| `streamon`  | No                 | -            |
+| `streamoff` | No                 | -            |
+| `emergency` | No                 | -            |
+| `up x`      | Sí (`x`)           | `20-500` cm  |
+| `down x`    | Sí (`x`)           | `20-500` cm  |
+| `left x`    | Sí (`x`)           | `20-500` cm  |
+| `right x`   | Sí (`x`)           | `20-500` cm  |
+| `forward x` | Sí (`x`)           | `20-500` cm  |
+| `back x`    | Sí (`x`)           | `20-500` cm  |
+| `cw x`      | Sí (`x`)           | `1-360`°     |
+| `ccw x`     | Sí (`x`)           | `1-360`°     |
+
 ## Parámetros monitorizados
 
-| Campo        | Descripción                        | Unidad |
-|--------------|------------------------------------|--------|
-| `bat`        | Nivel de batería                   | %      |
-| `h`          | Altura estimada (IMU)              | cm     |
-| `tof`        | Distancia sensor ToF               | cm     |
-| `baro`       | Altitud barométrica relativa       | cm     |
-| `pitch`      | Ángulo de cabeceo                  | °      |
-| `roll`       | Ángulo de balanceo                 | °      |
-| `yaw`        | Ángulo de guiñada                  | °      |
-| `vgx/vgy/vgz`| Velocidad en ejes X, Y, Z         | cm/s   |
-| `templ/temph`| Temperatura mínima / máxima IMU    | °C     |
-| `time`       | Tiempo acumulado de motor encendido| s      |
+- `bat`: nivel de batería (%).
+- `h`: altura estimada por IMU (cm).
+- `tof`: distancia medida por sensor ToF (cm).
+- `baro`: altitud barométrica relativa (cm).
+- `pitch`: ángulo de cabeceo (°).
+- `roll`: ángulo de balanceo (°).
+- `yaw`: ángulo de guiñada (°).
+- `vgx/vgy/vgz`: velocidad en ejes X, Y, Z (cm/s).
+- `templ/temph`: temperatura mínima y máxima IMU (°C).
+- `time`: tiempo acumulado de motor encendido (s).
 
 ## Funcionamiento interno
 
-El script realiza la inicialización en 3 pasos antes de mostrar la TUI:
+Cambios importantes en la versión actual del script:
 
-1. **[1/3] Listener UDP de estado** — escucha en el puerto 8890 y guarda continuamente el último paquete de telemetría en un fichero temporal (`/tmp/tello_state_<PID>.txt`).
-2. **[2/3] SDK mode** — envía el comando `command` al Tello y espera el `ok` de confirmación (bloqueante, usa puerto local 9000).
-3. **[3/3] Keepalive** — envía `battery?` cada 10 segundos para evitar el aterrizaje automático por inactividad (límite del SDK: 15 s).
+1. **Inicio mínimo** — al arrancar el script se inicia **solo** el listener de estado (puerto 8890) y el keepalive; no se activa automáticamente el SDK mode. Ahora el SDK mode debe activarse manualmente desde la TUI seleccionando el comando **CONNECT**.
+2. **Selector de comandos SDK** — el panel de control muestra todos los comandos a la vez en dos bloques (base y movimiento), con resaltado fuerte del comando seleccionado para mejorar visibilidad.
+3. **Navegación por bloques** — `←` y `→` mueven dentro del bloque actual; `↑` y `↓` saltan entre bloques para reducir pasos al navegar.
+4. **Prompt de argumentos con validación** — para `up/down/left/right/forward/back` y `cw/ccw`, al pulsar `Enter` se solicita `x` por consola y se valida contra los rangos definidos por el SDK antes de enviar el comando.
+5. **Detección NO SIGNAL** — el listener escribe un timestamp junto al último paquete de telemetría; si no se reciben datos en un intervalo configurable (por defecto 5 s), el panel muestra `NO SIGNAL`:
+   - Indicador de conexión en el encabezado cambia a `● NO SIGNAL` en rojo.
+   - La batería se muestra en rojo con la etiqueta `[NO SIGNAL]` y los campos de telemetría se muestran en rojo o en gris cuando no se tiene ningún paquete previo.
+6. **Recuadro de respuesta** — las respuestas del dron se presentan en un bloque con borde (comando / resultado) y colores semánticos (`ok` verde, `error` rojo, `timeout` amarillo).
 
-Una vez en la TUI:
+Detalles de la TUI y componentes internos:
 
-- **Bucle de visualización** — lee el fichero de estado, extrae los campos y refresca el panel automáticamente cada 5 segundos, o inmediatamente al recibir una respuesta de comando.
-- **`send_command_response`** — para `takeoff` y `land`, lanza un proceso Python3 que abre el puerto local 9000, envía el comando y espera la respuesta del Tello (timeout de 5 s). El resultado se muestra en la fila *Respuesta* de la TUI.
-- **Limpieza** — al salir (Ctrl+C, señal TERM o tecla `q`) se restaura el estado original del terminal, se matan los procesos de fondo y se eliminan los ficheros temporales.
+- **Listener de estado** — escribe en `/tmp/tello_state_<PID>.txt` dos líneas: `timestamp` y `datos`; el `display()` compara `timestamp` con el tiempo actual para decidir si hay señal.
+- **Keepalive** — envía `battery?` cada 10 s para evitar el aterrizaje por inactividad (límite SDK: 15 s).
+- **Comandos con respuesta** — `execute_selected_command()` decide si el comando requiere argumentos; para comandos directos usa `send_command_response()` y para conexión usa `connect_drone()`. En ambos casos se abre puerto local 9000 y se guarda la respuesta en `/tmp/tello_resp_<PID>.txt` (timeout 5 s).
+- **Limpieza** — al salir se restauran opciones del terminal y se eliminan los ficheros temporales.
 
 ## Estructura del proyecto
 
-```
+```text
 03. Tello_Edu_Monitor/
 └── tello_monitor.sh    # Script principal
 ```
 
 ## Notas
 
-- El script permite **despegar** (`takeoff`) y **aterrizar** (`land`) el dron desde el panel de control TUI.
-- El Tello transmite el estado a ~10-20 Hz de forma continua una vez que recibe el comando `command`.
+- El script permite ejecutar desde la TUI: `command`, `takeoff`, `land`, `streamon`, `streamoff`, `emergency`, `up x`, `down x`, `left x`, `right x`, `forward x`, `back x`, `cw x`, `ccw x`.
+- El Tello transmite el estado a ~10-20 Hz de forma continua una vez que recibe el comando `command`; el script detecta además la falta de paquetes y muestra `NO SIGNAL` cuando corresponde.
 
 ## Referencia
 
